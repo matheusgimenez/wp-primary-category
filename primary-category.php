@@ -37,6 +37,11 @@
 		 * @var string
 		 */
 		public $field_name = '_primary_category';
+		/**
+		 * Nonce name
+		 * @var string
+		 */
+		private $nonce_name = '_primary_category_save';
 
 		/**
 		 * Initialize the plugin
@@ -99,6 +104,8 @@
 			if ( ! $categories || is_wp_error( $categories ) ) {
 				return;
 			}
+			// Add nonce field
+			wp_nonce_field( basename( __FILE__ ), $this->nonce_name );
 
 			echo '<select name="primary-category">';
 			// set default option
@@ -121,6 +128,11 @@
 		 * @since 1.0.0
 		 */
 		public function save_meta( $post_id ) {
+			// Check the nonce before proceeding
+			if ( ! isset( $_REQUEST[ $this->nonce_name ] ) || ! wp_verify_nonce( $_POST[$this->nonce_name ], basename( __FILE__ ) ) ) {
+				return $post_id;
+			}
+			
 			if ( ! isset( $_REQUEST[ 'primary-category' ] ) ) {
 				return;
 			}
